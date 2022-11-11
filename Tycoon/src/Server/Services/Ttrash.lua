@@ -41,7 +41,9 @@ local maxgamepassindex = 10
 
 local mps = game:GetService("MarketplaceService")
 
-function ispart(cfram,folder)
+function ispart(cfram,folder) --[[
+	horrible math
+	]]--
 	for i,v in pairs(folder:GetChildren()) do
 
 		if v.Position == cfram then
@@ -58,7 +60,7 @@ function ispart(cfram,folder)
 			end
 		end
 	end
-
+ -- makes sure nothing is at exact same position
 	for i,v in pairs(workspace.SomeStuff.Local:GetChildren()) do
 		if v.Position == cfram then
 			return false
@@ -67,7 +69,7 @@ function ispart(cfram,folder)
 	return true
 end
 
-function Spray(player : Player,cframe : CFrame ,color : Color3 ,index,size)
+function Spray(player : Player,cframe : CFrame ,color : Color3 ,index,size) -- spray stuff
 	if not player then return end
 	index= tonumber(index)
 	size= tonumber(size)
@@ -113,7 +115,7 @@ function Spray(player : Player,cframe : CFrame ,color : Color3 ,index,size)
 		return
 	end
 
-
+-- clones of  Paint
 	local clone = game.ReplicatedStorage.Paint:Clone()
 	clone.Size = Vector3.new(size*0.5,0.001,size*0.5)
 	clone.CFrame = cframe
@@ -130,7 +132,7 @@ function Spray(player : Player,cframe : CFrame ,color : Color3 ,index,size)
 end
 
 
-
+-- horrible scripting again
 local plr = game.Players.LocalPlayer
 local mouse = plr:GetMouse()
 local buttondown=false
@@ -148,27 +150,23 @@ end)
 
 local emitpart
 
-function Raycast(player,Position)
-	local handle = player.Character.HumanoidRootPart
-
-	local Direction = CFrame.new(handle.Position,Position).LookVector
-
-
+function Raycast(player,Position) -- raycasts from mouse 
+	
 	local params = RaycastParams.new()
 	params.FilterDescendantsInstances = {workspace.Whitelist}
 	params.FilterType = Enum.RaycastFilterType.Whitelist
-	local results = workspace:Raycast(mouse.Origin.Position,mouse.Origin.LookVector*100,params)
+	local results = workspace:Raycast(mouse.Origin.Position,mouse.Origin.LookVector*100,params) -- mouse raycast
 	if results then
 		local vec = results.Normal
 		local fakepart = Instance.new("Part")
-		fakepart.Anchored=true
+		fakepart.Anchored=true -- some math
 		local x,y,z = results.Position.X,results.Position.Y,results.Position.Z
 		fakepart.CFrame = CFrame.lookAt(results.Position,results.Position+ results.Normal) * CFrame.Angles(math.rad(90),0,0)
 		fakepart.Position = Vector3.new(math.floor(x/GridSize)*GridSize ,  math.floor(y/GridSize)*GridSize ,   math.floor(z/GridSize)*GridSize ) 
 		local saved =fakepart.CFrame
-		fakepart:Destroy()
+		fakepart:Destroy() -- checks something
 		if ispart(fakepart.Position+ -fakepart.CFrame.UpVector* workspace.Settings.Layer.Value/60,workspace[player.Name]) ==false then
-			return nil
+			return nil -- yes
 		end
 		return saved
 	else
@@ -178,34 +176,34 @@ end
 
 function spray:KnitInit()
 	local Service = Knit.GetService("Spray")
-	runservice.Heartbeat:Connect(function()
+	runservice.Heartbeat:Connect(function() -- runservice
 		if toolequipped == "Erase" then
 
-			if eraser then
-				local n = workspace.Settings.Size.Value
-				eraser.Size = Vector3.new(0.1*n, 0.5*n, 0.5*n)    
-				local params = RaycastParams.new()
+			if eraser then -- eraser
+				local n = workspace.Settings.Size.Value -- gets the settings size
+				eraser.Size = Vector3.new(0.1*n, 0.5*n, 0.5*n)     -- sets the size for eraser 
+				local params = RaycastParams.new() -- raycast params
 				params.FilterDescendantsInstances = {workspace.Blacklist,workspace.SomeStuff.LokaleParts,workspace.SomeStuff.Local,workspace[plr.Name]}
-				if workspace:FindFirstChild("Paints") then
+				if workspace:FindFirstChild("Paints") then --some stuff
 					params.FilterDescendantsInstances = {workspace.Blacklist,workspace.Paints,workspace.SomeStuff.LokaleParts,workspace.SomeStuff.Local,workspace[plr.Name]}
 				end
 				params.FilterType = Enum.RaycastFilterType.Blacklist
 				local results = workspace:Raycast(mouse.Origin.Position,mouse.Origin.LookVector*100,params)
-				if results then
+				if results then -- gets results
 					local vec = results.Normal
-					eraser.Anchored=true
+					eraser.Anchored=true -- eraser position is at position
 					eraser.CFrame = CFrame.lookAt(results.Position,results.Position+ results.Normal) * CFrame.Angles(0,math.rad(90),0)
 				end
 			end
 
-			if buttondown then
+			if buttondown then -- if button down
 				local overlapparams = OverlapParams.new()
 				local folder = workspace:FindFirstChild(plr.Name)
 				overlapparams.FilterDescendantsInstances = {folder}
 				overlapparams.FilterType = Enum.RaycastFilterType.Whitelist
 				overlapparams.CollisionGroup = "cool"
 				local parts = workspace:GetPartsInPart(eraser,overlapparams)
-				if parts then
+				if parts then -- erase
 					for i,v in pairs(parts) do
 						if not v:IsDescendantOf(workspace[plr.Name]) then
 							return
@@ -240,7 +238,7 @@ function spray:KnitInit()
 			end
 		end
 
-		if toolequipped == "Spraycan" then
+		if toolequipped == "Spraycan" then -- sprays when mouse button down
 			if buttondown then
 				local cfram = Raycast(plr,mouse.Hit.Position)
 				local folder = workspace:FindFirstChild(plr.Name)
@@ -256,7 +254,7 @@ function spray:KnitInit()
 			if tool then
 				if tool.name == "Spraycan" then
 					if buttondown then
-						if not enabled then
+						if not enabled then -- spray lol
 							tool.Handle.EmitPart.SmokeParticle.Enabled=true
 							tool.Handle.Spray:Play()
 						end
@@ -277,12 +275,12 @@ function spray:KnitInit()
 	gui = gui:WaitForChild("ColourWheelGui")
 	gui = gui:WaitForChild("Destroy")
 
-	gui.MouseButton1Down:Connect(function()
+	gui.MouseButton1Down:Connect(function() -- clear all button
 		Service:ClearAll()
 	end)
 
 end
-repeat wait() until plr.Character
+repeat wait() until plr.Character -- waits for player to be added and checking if they equipped the stuff.
 plr.CharacterAdded:Connect(function()
 	plr.Character.DescendantAdded:Connect(function(child)
 		if child:IsA("Tool") then
@@ -317,10 +315,10 @@ end)
 
 
 
-function spray:KnitStart()
-	local service = Knit.GetService("Spray")
+function spray:KnitStart() -- When the Service starts
+	local service = Knit.GetService("Spray") -- gets the serversided Spray
 	while true do 
-		task.wait(1)
+		task.wait(1) -- each second it updates the local parts to server
 		if #workspace.SomeStuff.Local:GetChildren()>0 then
 			for i,v in pairs(workspace.SomeStuff.Local:GetChildren()) do
 				v.Parent = workspace.SomeStuff.LokaleParts
